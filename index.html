@@ -1,452 +1,140 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المتجر الحديث المطور</title>
+    <title>Login Page</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* إعدادات التنسيقات الأساسية */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            transition: background-color 0.3s ease;
-        }
-
-        .header {
-            background-color: #34495e;
-            color: #ecf0f1;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .user-profile {
-            display: none;
-            align-items: center;
-        }
-
-        .user-profile img {
-            border-radius: 50%;
-            margin-left: 10px;
-        }
-
-        #loginButton,
-        #logoutButton {
-            background: none;
-            border: none;
-            color: #ecf0f1;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        #loginButton:hover,
-        #logoutButton:hover {
-            background-color: #2c3e50;
-        }
-
-        #logoutButton {
-            display: none;
-        }
-
-        /* نافذة تسجيل الدخول */
-        .login-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .login-popup h2 {
-            margin-bottom: 1rem;
-            color: #34495e;
-        }
-
-        .social-login {
             display: flex;
             justify-content: center;
-            margin-bottom: 1rem;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            font-family: Arial, sans-serif;
         }
-
-        .social-login button {
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 2rem;
-            padding: 0.5rem;
-            transition: transform 0.3s;
+        .login-container {
+            width: 300px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
-
-        .social-login button:hover {
-            transform: scale(1.1);
-        }
-
-        .close-popup {
-            background: none;
-            border: none;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #34495e;
-        }
-
-        .close-popup:hover {
-            color: #e74c3c;
-        }
-
-        #errorMessage {
-            color: #e74c3c;
-            margin-top: 1rem;
-            display: none;
-        }
-
-        #loadingSpinner {
-            display: none;
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #333;
             text-align: center;
-            margin-top: 1rem;
         }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+        .login-container .input-group {
+            margin-bottom: 15px;
         }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        .login-container .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
         }
-
-        #retryButton {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: none;
-        }
-
-        #retryButton:hover {
-            background-color: #2980b9;
-        }
-
-        /* نموذج تسجيل الدخول وإنشاء الحساب */
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .auth-form input {
-            padding: 0.5rem;
-            border: 1px solid #bdc3c7;
-            border-radius: 5px;
-        }
-
-        .auth-form button {
-            background-color: #3498db;
-            color: white;
-            border: none;
+        .login-container .input-group input {
+            width: 100%;
             padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .login-container .login-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
-
-        .auth-form button:hover {
-            background-color: #2980b9;
+        .login-container .login-btn:hover {
+            background-color: #45a049;
         }
-
-        .toggle-auth {
-            margin-top: 1rem;
-            color: #3498db;
+        .login-container .google-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #db4437;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 5px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        .toggle-auth:hover {
-            text-decoration: underline;
+        .login-container .google-btn i {
+            margin-right: 10px;
+        }
+        .login-container .google-btn:hover {
+            background-color: #c23321;
         }
     </style>
 </head>
-
 <body>
-    <div class="header">
-        <h1>المتجر الحديث المطور</h1>
-        <div class="user-profile" id="userProfile">
-            <img src="" id="userPhoto" alt="User Photo" width="40" height="40">
-            <span id="userName"></span>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email">
         </div>
-        <button id="loginButton">تسجيل الدخول</button>
-        <button id="logoutButton">تسجيل الخروج</button>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        <button class="login-btn" onclick="loginWithEmail()">Login with Email</button>
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <i class="fab fa-google"></i> Login with Google
+        </button>
     </div>
 
-    <div class="login-popup" id="loginPopup">
-        <button class="close-popup" onclick="closePopup()">&times;</button>
-        <h2 id="authTitle">تسجيل الدخول</h2>
-        <div class="social-login">
-            <button onclick="loginWithGoogle()">
-                <i class="fab fa-google" style="color: #db4a39;"></i>
-            </button>
-        </div>
-        <p>أو</p>
-        <form class="auth-form" id="authForm">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-            <input type="password" id="password" placeholder="كلمة المرور" required>
-            <button type="submit" id="authSubmit">تسجيل الدخول</button>
-        </form>
-        <p class="toggle-auth" id="toggleAuth">إنشاء حساب جديد</p>
-        <div id="errorMessage"></div>
-        <button id="retryButton" onclick="retryAuth()">إعادة المحاولة</button>
-        <div id="loadingSpinner">
-            <div class="spinner"></div>
-            <p>جاري المعالجة...</p>
-        </div>
-    </div>
-
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
-        // إعدادات Firebase
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAHFrLf0_PJWcV8QlJR6mSzvYoiRLMaznQ",
-            authDomain: "chatapp-e6143.firebaseapp.com",
-            databaseURL: "https://chatapp-e6143-default-rtdb.firebaseio.com",
-            projectId: "chatapp-e6143",
-            storageBucket: "chatapp-e6143.appspot.com",
-            messagingSenderId: "129840543929",
-            appId: "1:129840543929:web:fe2258da50b9823c8fc368",
-            measurementId: "G-QM2PQFE3M5"
+            apiKey: "AIzaSyDGpAHia_wEmrhnmYjrPf1n1TrAzwEMiAI",
+            authDomain: "messageemeapp.firebaseapp.com",
+            databaseURL: "https://messageemeapp-default-rtdb.firebaseio.com",
+            projectId: "messageemeapp",
+            storageBucket: "messageemeapp.appspot.com",
+            messagingSenderId: "255034474844",
+            appId: "1:255034474844:web:5e3b7a6bc4b2fb94cc4199"
         };
-
-        // تهيئة Firebase
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
 
-        // عناصر الـ DOM
-        const loginButton = document.getElementById('loginButton');
-        const logoutButton = document.getElementById('logoutButton');
-        const userProfile = document.getElementById('userProfile');
-        const loginPopup = document.getElementById('loginPopup');
-        const userPhoto = document.getElementById('userPhoto');
-        const userName = document.getElementById('userName');
-        const errorMessage = document.getElementById('errorMessage');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const retryButton = document.getElementById('retryButton');
-        const authForm = document.getElementById('authForm');
-        const authTitle = document.getElementById('authTitle');
-        const authSubmit = document.getElementById('authSubmit');
-        const toggleAuth = document.getElementById('toggleAuth');
-
-        let isLogin = true;
-
-        // عرض نافذة تسجيل الدخول
-        loginButton.addEventListener('click', () => {
-            loginPopup.style.display = 'block';
-            hideErrorMessage();
-            retryButton.style.display = 'none';
-        });
-
-        // وظيفة تسجيل الخروج
-        logoutButton.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                updateUILoggedOut();
-            }).catch(error => {
-                console.error('Error during sign-out:', error);
-                showErrorMessage('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
-            });
-        });
-
-        // إغلاق نافذة تسجيل الدخول
-        function closePopup() {
-            loginPopup.style.display = 'none';
-            hideErrorMessage();
-            retryButton.style.display = 'none';
-        }
-
-        // تسجيل الدخول باستخدام Google
-             // تسجيل الدخول باستخدام Google
-        function loginWithGoogle() {
-            hideErrorMessage();
-            showLoadingSpinner();
-            retryButton.style.display = 'none';
-
-            const provider = new firebase.auth.GoogleAuthProvider();
-            
-            // التحقق من دعم النوافذ المنبثقة
-            const isPopupSupported = window.open('about:blank', 'popup_test', 'width=1,height=1');
-            if (!isPopupSupported || isPopupSupported.closed || typeof isPopupSupported.closed === 'undefined') {
-                // إذا لم يتم دعم النوافذ المنبثقة، استخدم إعادة التوجيه
-                auth.signInWithRedirect(provider).catch(handleAuthError);
-            } else {
-                isPopupSupported.close();
-                // إذا تم دعم النوافذ المنبثقة، استخدم النافذة المنبثقة
-                auth.signInWithPopup(provider)
-                    .then((result) => {
-                        const user = result.user;
-                        updateUserProfile(user);
-                        closePopup();
-                    })
-                    .catch(handleAuthError)
-                    .finally(hideLoadingSpinner);
-            }
-        // تحديث واجهة المستخدم بعد تسجيل الدخول
-        function updateUserProfile(user) {
-            userProfile.style.display = 'flex';
-            userPhoto.src = user.photoURL || 'https://via.placeholder.com/40';
-            userName.textContent = user.displayName || user.email;
-            loginButton.style.display = 'none';
-            logoutButton.style.display = 'inline-block';
-        }
-
-        // تحديث واجهة المستخدم بعد تسجيل الخروج
-        function updateUILoggedOut() {
-            userProfile.style.display = 'none';
-            loginButton.style.display = 'inline-block';
-            logoutButton.style.display = 'none';
-        }
-
-        // إظهار رسالة الخطأ
-        function showErrorMessage(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-
-        // إخفاء رسالة الخطأ
-        function hideErrorMessage() {
-            errorMessage.textContent = '';
-            errorMessage.style.display = 'none';
-        }
-
-        // إظهار مؤشر التحميل
-        function showLoadingSpinner() {
-            loadingSpinner.style.display = 'block';
-        }
-
-        // إخفاء مؤشر التحميل
-        function hideLoadingSpinner() {
-            loadingSpinner.style.display = 'none';
-        }
-
-        // التبديل بين تسجيل الدخول وإنشاء الحساب
-        toggleAuth.addEventListener('click', () => {
-            isLogin = !isLogin;
-            authTitle.textContent = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب';
-            authSubmit.textContent = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب';
-            toggleAuth.textContent = isLogin ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-        });
-
-        // معالجة نموذج تسجيل الدخول / إنشاء الحساب
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Login with Email and Password
+        function loginWithEmail() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            hideErrorMessage();
-            showLoadingSpinner();
-
-            if (isLogin) {
-                // تسجيل الدخول
-                auth.signInWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        updateUserProfile(userCredential.user);
-                        closePopup();
-                    })
-                    .catch(handleAuthError)
-                    .finally(hideLoadingSpinner);
-                    } else {
-                // إنشاء حساب جديد
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        updateUserProfile(userCredential.user);
-                        closePopup();
-                    })
-                    .catch(handleAuthError)
-                    .finally(hideLoadingSpinner);
-            }
-        });
-
-        // التعامل مع أخطاء المصادقة
-           // التعامل مع أخطاء المصادقة
-        function handleAuthError(error) {
-            console.error('Authentication error:', error);
-            let errorMsg = 'حدث خطأ أثناء المصادقة: ';
-            switch (error.code) {
-                case 'auth/popup-closed-by-user':
-                    errorMsg += 'تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى وعدم إغلاق النافذة حتى اكتمال العملية.';
-                    break;
-                case 'auth/popup-blocked':
-                    errorMsg += 'تم منع النافذة المنبثقة. الرجاء السماح بالنوافذ المنبثقة لهذا الموقع وإعادة المحاولة.';
-                    break;
-                case 'auth/cancelled-popup-request':
-                    errorMsg += 'تم إلغاء طلب النافذة المنبثقة. الرجاء المحاولة مرة أخرى.';
-                    break;
-                case 'auth/network-request-failed':
-                    errorMsg += 'فشل في الاتصال بالشبكة. الرجاء التحقق من اتصال الإنترنت الخاص بك وإعادة المحاولة.';
-                    break;
-                default:
-                    default:
-                    errorMsg += error.message;
-            }
-            showErrorMessage(errorMsg);
-            retryButton.style.display = 'block';
-            hideLoadingSpinner();
-        }
-        
-        
-        // إعادة محاولة المصادقة
-        function retryAuth() {
-            hideErrorMessage();
-            retryButton.style.display = 'none';
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert('Logged in successfully!');
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
-        // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
-       auth.onAuthStateChanged(user => {
-            if (user) {
-                updateUserProfile(user);
-            } else {
-                updateUILoggedOut();
-            }
-        });
+        // Login with Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert('Logged in with Google successfully!');
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
     </script>
 </body>
-
 </html>
