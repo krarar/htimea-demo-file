@@ -1,206 +1,114 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المتجر الحديث المطور</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>صفحة تسجيل الدخول</title>
     <style>
-        /* إعدادات التنسيقات الأساسية */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            transition: background-color 0.3s ease;
-        }
-
-        .header {
-            background-color: #34495e;
-            color: #ecf0f1;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .user-profile {
-            display: none;
-            align-items: center;
-        }
-
-        .user-profile img {
-            border-radius: 50%;
-            margin-left: 10px;
-        }
-
-        #loginButton,
-        #logoutButton {
-            background: none;
-            border: none;
-            color: #ecf0f1;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        #loginButton:hover,
-        #logoutButton:hover {
-            background-color: #2c3e50;
-        }
-
-        #logoutButton {
-            display: none;
-        }
-
-        /* نافذة تسجيل الدخول */
-        .login-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .login-popup h2 {
-            margin-bottom: 1rem;
-            color: #34495e;
-        }
-
-        .social-login {
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
-            margin-bottom: 1rem;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
         }
 
-        .social-login button {
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 2rem;
-            padding: 0.5rem;
-            transition: transform 0.3s;
-        }
-
-        .social-login button:hover {
-            transform: scale(1.1);
-        }
-
-        .close-popup {
-            background: none;
-            border: none;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #34495e;
-        }
-
-        .close-popup:hover {
-            color: #e74c3c;
-        }
-
-        #errorMessage {
-            color: #e74c3c;
-            margin-top: 1rem;
-            display: none;
-        }
-
-        #loadingSpinner {
-            display: none;
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            margin-top: 1rem;
+            width: 300px;
         }
 
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+        h2 {
+            margin-bottom: 20px;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        #retryButton {
-            background-color: #3498db;
+        .google-login-btn {
+            background-color: #4285F4;
             color: white;
+            padding: 10px;
             border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .google-login-btn img {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .error-message {
+            color: red;
             margin-top: 10px;
             display: none;
         }
 
-        #retryButton:hover {
-            background-color: #2980b9;
+        .user-profile {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .user-profile img {
+            border-radius: 50%;
+        }
+
+        .loading-spinner {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <h1>المتجر الحديث المطور</h1>
+    <div class="login-container">
+        <h2>سجل الدخول باستخدام حساب Google الخاص بك</h2>
+
+        <!-- زر تسجيل الدخول بواسطة Google -->
+        <button class="google-login-btn" id="googleLoginBtn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Icon">
+            تسجيل الدخول باستخدام Google
+        </button>
+
+        <!-- رسالة خطأ -->
+        <div class="error-message" id="errorMessage">حدث خطأ أثناء تسجيل الدخول. الرجاء المحاولة مرة أخرى.</div>
+
+        <!-- مؤشر التحميل -->
+        <div class="loading-spinner" id="loadingSpinner">جارٍ التحميل...</div>
+
+        <!-- ملف التعريف بعد تسجيل الدخول -->
         <div class="user-profile" id="userProfile">
-            <img src="" id="userPhoto" alt="User Photo" width="40" height="40">
-            <span id="userName"></span>
-        </div>
-        <button id="loginButton">تسجيل الدخول</button>
-        <button id="logoutButton">تسجيل الخروج</button>
-    </div>
-
-    <div class="login-popup" id="loginPopup">
-        <button class="close-popup" onclick="closePopup()">&times;</button>
-        <h2>تسجيل الدخول</h2>
-        <div class="social-login">
-            <button onclick="loginWithGoogle()">
-                <i class="fab fa-google" style="color: #db4a39;"></i>
-            </button>
-        </div>
-        <p>سجل الدخول باستخدام حساب Google الخاص بك</p>
-        <div id="errorMessage"></div>
-        <button id="retryButton" onclick="loginWithGoogle()">إعادة المحاولة</button>
-        <div id="loadingSpinner">
-            <div class="spinner"></div>
-            <p>جاري تسجيل الدخول...</p>
+            <img id="userPhoto" src="" alt="User Photo" width="100">
+            <p id="userName"></p>
+            <button class="logout-btn" id="logoutButton">تسجيل الخروج</button>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
     <script>
-        // إعدادات Firebase
+        // إعداد Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAHFrLf0_PJWcV8QlJR6mSzvYoiRLMaznQ",
             authDomain: "chatapp-e6143.firebaseapp.com",
@@ -213,83 +121,61 @@
         };
 
         // تهيئة Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.getAuth(app);
 
-        // عناصر الـ DOM
-        const loginButton = document.getElementById('loginButton');
-        const logoutButton = document.getElementById('logoutButton');
-        const userProfile = document.getElementById('userProfile');
-        const loginPopup = document.getElementById('loginPopup');
-        const userPhoto = document.getElementById('userPhoto');
-        const userName = document.getElementById('userName');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
         const errorMessage = document.getElementById('errorMessage');
         const loadingSpinner = document.getElementById('loadingSpinner');
-        const retryButton = document.getElementById('retryButton');
-
-        // عرض نافذة تسجيل الدخول
-        loginButton.addEventListener('click', () => {
-            loginPopup.style.display = 'block';
-            hideErrorMessage();
-            retryButton.style.display = 'none';
-        });
-
-        // وظيفة تسجيل الخروج
-        logoutButton.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                updateUILoggedOut();
-            }).catch(error => {
-                console.error('Error during sign-out:', error);
-            });
-        });
-
-        // إغلاق نافذة تسجيل الدخول
-        function closePopup() {
-            loginPopup.style.display = 'none';
-            hideErrorMessage();
-            retryButton.style.display = 'none';
-        }
+        const userProfile = document.getElementById('userProfile');
+        const userPhoto = document.getElementById('userPhoto');
+        const userName = document.getElementById('userName');
+        const logoutButton = document.getElementById('logoutButton');
 
         // تسجيل الدخول باستخدام Google
-        function loginWithGoogle() {
+        googleLoginBtn.addEventListener('click', () => {
             hideErrorMessage();
             showLoadingSpinner();
-            retryButton.style.display = 'none';
+            const provider = new firebase.GoogleAuthProvider();
 
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(result => {
-                const user = result.user;
-                updateUserProfile(user);
-                closePopup();
+            firebase.signInWithPopup(auth, provider)
+                .then(result => {
+                    const user = result.user;
+                    updateUserProfile(user);
+                    hideLoadingSpinner();
+                })
+                .catch(error => {
+                    hideLoadingSpinner();
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        showErrorMessage('تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى.');
+                    } else {
+                        showErrorMessage('حدث خطأ أثناء تسجيل الدخول. الرجاء المحاولة مرة أخرى.');
+                    }
+                });
+        });
+
+        // تسجيل الخروج
+        logoutButton.addEventListener('click', () => {
+            firebase.signOut(auth).then(() => {
+                updateUILoggedOut();
             }).catch(error => {
-                console.error('Error during Google sign-in:', error);
-                let errorMsg = 'حدث خطأ أثناء تسجيل الدخول: ';
-                if (error.code === 'auth/popup-closed-by-user') {
-                    errorMsg += 'تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى.';
-                } else {
-                    errorMsg += error.message;
-                }
-                showErrorMessage(errorMsg);
-                retryButton.style.display = 'block';
-            }).finally(() => {
-                hideLoadingSpinner();
+                showErrorMessage('حدث خطأ أثناء تسجيل الخروج.');
             });
-        }
+        });
 
         // تحديث واجهة المستخدم بعد تسجيل الدخول
         function updateUserProfile(user) {
-            userProfile.style.display = 'flex';
+            userProfile.style.display = 'block';
             userPhoto.src = user.photoURL;
             userName.textContent = user.displayName;
-            loginButton.style.display = 'none';
+            googleLoginBtn.style.display = 'none';
             logoutButton.style.display = 'inline-block';
         }
 
         // تحديث واجهة المستخدم بعد تسجيل الخروج
         function updateUILoggedOut() {
             userProfile.style.display = 'none';
-            loginButton.style.display = 'inline-block';
+            googleLoginBtn.style.display = 'inline-block';
             logoutButton.style.display = 'none';
         }
 
@@ -316,7 +202,7 @@
         }
 
         // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
-        auth.onAuthStateChanged(user => {
+        firebase.onAuthStateChanged(auth, user => {
             if (user) {
                 updateUserProfile(user);
             } else {
