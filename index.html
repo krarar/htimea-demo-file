@@ -113,8 +113,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <!-- Firebase Authentication -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <!-- Firebase Storage (for user photo) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -160,19 +158,6 @@
             document.getElementById('welcome-container').style.display = 'block';
             document.getElementById('user-name').innerText = user.displayName ? user.displayName : user.email;
             document.getElementById('user-photo').src = user.photoURL ? user.photoURL : 'https://via.placeholder.com/100';
-
-            // Check for a user photo in storage if not available
-            if (!user.photoURL) {
-                const storageRef = firebase.storage().ref();
-                const userPhotoRef = storageRef.child('user_photos/' + user.uid + '.jpg');
-                userPhotoRef.getDownloadURL()
-                    .then((url) => {
-                        document.getElementById('user-photo').src = url;
-                    })
-                    .catch((error) => {
-                        console.log('No photo found, using default.');
-                    });
-            }
         }
     </script>
 </body>
