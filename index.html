@@ -303,31 +303,31 @@
         }
 
         // تسجيل الدخول باستخدام Google
+             // تسجيل الدخول باستخدام Google
         function loginWithGoogle() {
             hideErrorMessage();
             showLoadingSpinner();
             retryButton.style.display = 'none';
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(result => {
-                const user = result.user;
-                updateUserProfile(user);
-                closePopup();
-            }).catch(error => {
-                console.error('Error during Google sign-in:', error);
-                let errorMsg = 'حدث خطأ أثناء تسجيل الدخول: ';
-                if (error.code === 'auth/popup-closed-by-user') {
-                    errorMsg += 'تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى.';
-                } else {
-                    errorMsg += error.message;
-                }
-                showErrorMessage(errorMsg);
-                retryButton.style.display = 'block';
-            }).finally(() => {
-                hideLoadingSpinner();
-            });
-        }
-
+            
+            // التحقق من دعم النوافذ المنبثقة
+            const isPopupSupported = window.open('about:blank', 'popup_test', 'width=1,height=1');
+            if (!isPopupSupported || isPopupSupported.closed || typeof isPopupSupported.closed === 'undefined') {
+                // إذا لم يتم دعم النوافذ المنبثقة، استخدم إعادة التوجيه
+                auth.signInWithRedirect(provider).catch(handleAuthError);
+            } else {
+                isPopupSupported.close();
+                // إذا تم دعم النوافذ المنبثقة، استخدم النافذة المنبثقة
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        const user = result.user;
+                        updateUserProfile(user);
+                        closePopup();
+                    })
+                    .catch(handleAuthError)
+                    .finally(hideLoadingSpinner);
+            }
         // تحديث واجهة المستخدم بعد تسجيل الدخول
         function updateUserProfile(user) {
             userProfile.style.display = 'flex';
@@ -405,29 +405,33 @@
         });
 
         // التعامل مع أخطاء المصادقة
+           // التعامل مع أخطاء المصادقة
         function handleAuthError(error) {
             console.error('Authentication error:', error);
             let errorMsg = 'حدث خطأ أثناء المصادقة: ';
             switch (error.code) {
-                case 'auth/user-not-found':
-                    errorMsg += 'لم يتم العثور على المستخدم. يرجى التحقق من البريد الإلكتروني.';
+                case 'auth/popup-closed-by-user':
+                    errorMsg += 'تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى وعدم إغلاق النافذة حتى اكتمال العملية.';
                     break;
-                case 'auth/wrong-password':
-                    errorMsg += 'كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.';
+                case 'auth/popup-blocked':
+                    errorMsg += 'تم منع النافذة المنبثقة. الرجاء السماح بالنوافذ المنبثقة لهذا الموقع وإعادة المحاولة.';
                     break;
-                case 'auth/email-already-in-use':
-                    errorMsg += 'البريد الإلكتروني مستخدم بالفعل. يرجى استخدام بريد إلكتروني آخر.';
+                case 'auth/cancelled-popup-request':
+                    errorMsg += 'تم إلغاء طلب النافذة المنبثقة. الرجاء المحاولة مرة أخرى.';
                     break;
-                case 'auth/weak-password':
-                    errorMsg += 'كلمة المرور ضعيفة. يرجى اختيار كلمة مرور أقوى.';
+                case 'auth/network-request-failed':
+                    errorMsg += 'فشل في الاتصال بالشبكة. الرجاء التحقق من اتصال الإنترنت الخاص بك وإعادة المحاولة.';
                     break;
                 default:
+                    default:
                     errorMsg += error.message;
             }
             showErrorMessage(errorMsg);
             retryButton.style.display = 'block';
+            hideLoadingSpinner();
         }
-
+        
+        
         // إعادة محاولة المصادقة
         function retryAuth() {
             hideErrorMessage();
@@ -435,7 +439,7 @@
         }
 
         // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
-        auth.onAuthStateChanged(user => {
+       auth.onAuthStateChanged(user => {
             if (user) {
                 updateUserProfile(user);
             } else {
