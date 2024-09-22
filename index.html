@@ -15,20 +15,21 @@
             background: linear-gradient(135deg, #71b7e6, #9b59b6);
             font-family: Arial, sans-serif;
         }
-        .login-container {
+        .login-container, .welcome-container {
             width: 300px;
             padding: 20px;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
-        .login-container h2 {
+        .login-container h2, .welcome-container h2 {
             margin-bottom: 20px;
             color: #333;
-            text-align: center;
         }
         .login-container .input-group {
             margin-bottom: 15px;
+            text-align: left;
         }
         .login-container .input-group label {
             display: block;
@@ -42,7 +43,7 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        .login-container .login-btn {
+        .login-container .login-btn, .google-btn {
             width: 100%;
             padding: 10px;
             border: none;
@@ -51,33 +52,42 @@
             font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
-        .login-container .login-btn:hover {
-            background-color: #45a049;
-        }
-        .login-container .google-btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
+        .google-btn {
             background-color: #db4437;
-            color: #fff;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .login-container .google-btn i {
+        .google-btn i {
             margin-right: 10px;
         }
-        .login-container .google-btn:hover {
-            background-color: #c23321;
+        .login-container .login-btn:hover, .google-btn:hover {
+            background-color: #45a049;
+        }
+        .welcome-container {
+            background-color: #333;
+            color: #fff;
+        }
+        .welcome-container h2 {
+            color: #71b7e6;
+        }
+        .welcome-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        .welcome-container .username {
+            font-size: 22px;
+            font-weight: bold;
+            color: #71b7e6;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container" id="login-container">
         <h2>Login</h2>
         <div class="input-group">
             <label for="email">Email</label>
@@ -93,10 +103,18 @@
         </button>
     </div>
 
+    <div class="welcome-container" id="welcome-container" style="display: none;">
+        <h2>Welcome</h2>
+        <img id="user-photo" src="" alt="User Photo">
+        <div class="username" id="user-name">User Name</div>
+    </div>
+
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <!-- Firebase Authentication -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- Firebase Storage (for user photo) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -117,7 +135,7 @@
             const password = document.getElementById('password').value;
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    alert('Logged in successfully!');
+                    showWelcomePage(userCredential.user);
                 })
                 .catch((error) => {
                     alert(error.message);
@@ -129,11 +147,32 @@
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider)
                 .then((result) => {
-                    alert('Logged in with Google successfully!');
+                    showWelcomePage(result.user);
                 })
                 .catch((error) => {
                     alert(error.message);
                 });
+        }
+
+        // Show Welcome Page
+        function showWelcomePage(user) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('welcome-container').style.display = 'block';
+            document.getElementById('user-name').innerText = user.displayName ? user.displayName : user.email;
+            document.getElementById('user-photo').src = user.photoURL ? user.photoURL : 'https://via.placeholder.com/100';
+
+            // Check for a user photo in storage if not available
+            if (!user.photoURL) {
+                const storageRef = firebase.storage().ref();
+                const userPhotoRef = storageRef.child('user_photos/' + user.uid + '.jpg');
+                userPhotoRef.getDownloadURL()
+                    .then((url) => {
+                        document.getElementById('user-photo').src = url;
+                    })
+                    .catch((error) => {
+                        console.log('No photo found, using default.');
+                    });
+            }
         }
     </script>
 </body>
