@@ -45,7 +45,8 @@
             margin-left: 10px;
         }
 
-        #loginButton, #logoutButton {
+        #loginButton,
+        #logoutButton {
             background: none;
             border: none;
             color: #ecf0f1;
@@ -56,7 +57,8 @@
             transition: background-color 0.3s;
         }
 
-        #loginButton:hover, #logoutButton:hover {
+        #loginButton:hover,
+        #logoutButton:hover {
             background-color: #2c3e50;
         }
 
@@ -143,8 +145,28 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #retryButton {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #retryButton:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
@@ -170,6 +192,7 @@
         </div>
         <p>سجل الدخول باستخدام حساب Google الخاص بك</p>
         <div id="errorMessage"></div>
+        <button id="retryButton" onclick="loginWithGoogle()">إعادة المحاولة</button>
         <div id="loadingSpinner">
             <div class="spinner"></div>
             <p>جاري تسجيل الدخول...</p>
@@ -194,6 +217,7 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
+        // عناصر الـ DOM
         const loginButton = document.getElementById('loginButton');
         const logoutButton = document.getElementById('logoutButton');
         const userProfile = document.getElementById('userProfile');
@@ -202,31 +226,37 @@
         const userName = document.getElementById('userName');
         const errorMessage = document.getElementById('errorMessage');
         const loadingSpinner = document.getElementById('loadingSpinner');
+        const retryButton = document.getElementById('retryButton');
 
+        // عرض نافذة تسجيل الدخول
         loginButton.addEventListener('click', () => {
             loginPopup.style.display = 'block';
             hideErrorMessage();
+            retryButton.style.display = 'none';
         });
 
+        // وظيفة تسجيل الخروج
         logoutButton.addEventListener('click', () => {
             auth.signOut().then(() => {
-                console.log('User signed out');
                 updateUILoggedOut();
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-                showErrorMessage('حدث خطأ أثناء تسجيل الخروج: ' + error.message);
+            }).catch(error => {
+                console.error('Error during sign-out:', error);
             });
         });
 
+        // إغلاق نافذة تسجيل الدخول
         function closePopup() {
             loginPopup.style.display = 'none';
             hideErrorMessage();
+            retryButton.style.display = 'none';
         }
 
+        // تسجيل الدخول باستخدام Google
         function loginWithGoogle() {
             hideErrorMessage();
             showLoadingSpinner();
-            
+            retryButton.style.display = 'none';
+
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(result => {
                 const user = result.user;
@@ -234,74 +264,58 @@
                 closePopup();
             }).catch(error => {
                 console.error('Error during Google sign-in:', error);
-                showErrorMessage('حدث خطأ أثناء تسجيل الدخول: ' + error.message);
+                let errorMsg = 'حدث خطأ أثناء تسجيل الدخول: ';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMsg += 'تم إغلاق نافذة تسجيل الدخول قبل إكمال العملية. الرجاء المحاولة مرة أخرى.';
+                } else {
+                    errorMsg += error.message;
+                }
+                showErrorMessage(errorMsg);
+                retryButton.style.display = 'block';
             }).finally(() => {
                 hideLoadingSpinner();
             });
         }
 
+        // تحديث واجهة المستخدم بعد تسجيل الدخول
+        function updateUserProfile(user) {
+            userProfile.style.display = 'flex';
+            userPhoto.src = user.photoURL;
+            userName.textContent = user.displayName;
+            loginButton.style.display = 'none';
+            logoutButton.style.display = 'inline-block';
+        }
+
+        // تحديث واجهة المستخدم بعد تسجيل الخروج
+        function updateUILoggedOut() {
+            userProfile.style.display = 'none';
+            loginButton.style.display = 'inline-block';
+            logoutButton.style.display = 'none';
+        }
+
+        // إظهار رسالة الخطأ
         function showErrorMessage(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
         }
 
+        // إخفاء رسالة الخطأ
         function hideErrorMessage() {
+            errorMessage.textContent = '';
             errorMessage.style.display = 'none';
         }
 
+        // إظهار مؤشر التحميل
         function showLoadingSpinner() {
             loadingSpinner.style.display = 'block';
         }
 
+        // إخفاء مؤشر التحميل
         function hideLoadingSpinner() {
             loadingSpinner.style.display = 'none';
         }
 
-        // التحقق من حالة الاتصال بـ Firebase
-        function checkFirebaseConnection() {
-            const connectedRef = database.ref(".info/connected");
-            connectedRef.on("value", (snap) => {
-                if (snap.val() === true) {
-                    console.log("Connected to Firebase");
-                    hideErrorMessage();
-                } else {
-                    console.log("Not connected to Firebase");
-                    showErrorMessage("لا يوجد اتصال بقاعدة البيانات. يرجى التحقق من اتصال الإنترنت الخاص بك.");
-                }
-            });
-        }
-
-        function updateUserProfile(user) {
-            if (user) {
-                userProfile.style.display = 'flex';
-                loginButton.style.display = 'none';
-                logoutButton.style.display = 'inline-block';
-                userPhoto.src = user.photoURL || 'default-avatar.png';
-                userName.textContent = user.displayName || 'مستخدم';
-
-                // حفظ بيانات المستخدم في قاعدة البيانات
-                const userData = {
-                    name: user.displayName,
-                    email: user.email,
-                    photoURL: user.photoURL,
-                    lastLogin: firebase.database.ServerValue.TIMESTAMP
-                };
-                database.ref('users/' + user.uid).set(userData).catch(error => {
-                    console.error('Error saving user data:', error);
-                    showErrorMessage('حدث خطأ أثناء حفظ بيانات المستخدم: ' + error.message);
-                });
-            }
-        }
-
-        function updateUILoggedOut() {
-            userProfile.style.display = 'none';
-            loginButton.style.display = 'inline-block';
-            logoutButton.style.display = 'none';
-            userPhoto.src = '';
-            userName.textContent = '';
-        }
-
-        // استمع لتغييرات حالة المصادقة
+        // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
         auth.onAuthStateChanged(user => {
             if (user) {
                 updateUserProfile(user);
@@ -309,9 +323,6 @@
                 updateUILoggedOut();
             }
         });
-
-        // تحقق من الاتصال عند تحميل الصفحة
-        window.addEventListener('load', checkFirebaseConnection);
     </script>
 </body>
 
