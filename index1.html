@@ -1600,6 +1600,76 @@ video {
     background-color: #218838;
 }
 
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1);
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.product-image.active {
+    opacity: 1;
+    transform: scale(1.05); /* تكبير الصورة قليلاً عند الانتقال */
+}
+
+.image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s ease;
+    opacity: 0;
+    z-index: 1;
+}
+
+.product-card:hover .image-nav {
+    opacity: 1;
+}
+
+.image-nav:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.image-nav.prev {
+    left: 0.5rem;
+}
+
+.image-nav.next {
+    right: 0.5rem;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.action-button:hover {
+    transform: scale(1.2); /* تكبير الأيقونة عند التمرير */
+}
+
+.action-count {
+    margin-left: 5px;
+    font-size: 0.9rem;
+}
+
+
+
+.dark-mode-toggle i {
+    color: #2C3E50; /* استبدل #FFD700 بأي كود لون تريده */
+}
+
 
     </style>
 </head>
@@ -1614,10 +1684,8 @@ video {
                     <input type="text" id="searchInput" placeholder="البحث عن المنتجات...">
                 </div>
                 <div id="ad-banner"></div>
-                <button class="header-button dark-mode-toggle" onclick="toggleDarkMode()">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <button class="header-button language-toggle" onclick="toggleLanguage()">EN</button>
+                
+                
                 
             </div>
        <!-- قائمة التصنيفات مع التحسينات -->
@@ -1726,11 +1794,11 @@ video {
             <i class="fas fa-bookmark"></i>
             <span>المحفوظات</span>
         </a>
-        <a href="#" onclick="showCategories()" class="nav-item">
+        <a href="orders-management-page.html" onclick="showCategories()" class="nav-item">
             <i class="fas fa-list"></i>
             <span>التصنيفات</span>
         </a>
-        <a href="#" onclick="showOffers()" class="nav-item">
+        <a href="صفحه اضافه الاعلان.html" onclick="showOffers()" class="nav-item">
             <i class="fas fa-percentage"></i>
             <span>العروض</span>
         </a>
@@ -1885,18 +1953,18 @@ video {
 <!-- قائمة الأزرار المنبثقة -->
 <div id="popupMenu" class="popup-menu">
   <!-- أيقونات القائمة -->
-  <button class="menu-item" onclick="openAdPopup()">
-    <i class="fas fa-bullhorn"></i>
-  </button>
-
+  <button class="menu-item" 
+<button class="menu-item" onclick="toggleLanguage()">
+    <i class="fas fa-globe"></i> <!-- أيقونة الكرة الأرضية لتغيير اللغة -->
+</button>
+<button class="header-button dark-mode-toggle" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i>
+                </button>
   <button class="menu-item" onclick="redirectToCartPage()">
     <i class="fas fa-shopping-cart"></i>
     <span class="cart-count" id="cartCount">0</span>
   </button>
 
-  <button class="menu-item" onclick="toggleAddProductForm()">
-    <i class="fas fa-box"></i>
-  </button>
 
   <button class="menu-item" onclick="redirectToMessagesPage()">
     <i class="fas fa-envelope"></i>
@@ -2926,17 +2994,17 @@ window.onload = () => {
         // Update the createProductCard function to include the cart button
 function createProductCard(key, product) {
     const imagesHtml = product.images.map((img, index) => `
-        <img src="${img}" alt="${product.name}" class="product-image" style="opacity: ${index === 0 ? 1 : 0};" onclick="redirectToProductPage('${product.fileName}')">
+        <img src="${img}" alt="${product.name}" class="product-image ${index === 0 ? 'active' : ''}" id="image-${key}-${index}" onclick="redirectToProductPage('${product.fileName}')">
     `).join('');
 
-    return `
+    const productCardHtml = `
         <div class="product-card" data-product-id="${key}">
-            <div class="product-images">
+            <div class="product-images" id="product-images-${key}">
                 ${imagesHtml}
                 <button class="image-nav prev" onclick="changeImage('${key}', -1)">❮</button>
                 <button class="image-nav next" onclick="changeImage('${key}', 1)">❯</button>
             </div>
-            
+
             <div class="product-info">
                 <h3 style="color: var(--accent-color);">${product.name}</h3>
               
@@ -2961,7 +3029,33 @@ function createProductCard(key, product) {
             </div>
         </div>
     `;
+
+    // بدء التبديل التلقائي للصور
+    setTimeout(() => startImageSlider(key, product.images.length), 0); // تأخير لضمان تحميل الصور
+
+    return productCardHtml;
 }
+
+// وظيفة لتبديل الصور يدويًا عند الضغط على الزر
+function changeImage(key, direction) {
+    const images = document.querySelectorAll(`#product-images-${key} .product-image`);
+    let currentIndex = Array.from(images).findIndex(img => img.classList.contains('active'));
+    images[currentIndex].classList.remove('active');  // إخفاء الصورة الحالية
+    currentIndex = (currentIndex + direction + images.length) % images.length;  // الانتقال إلى الصورة التالية
+    images[currentIndex].classList.add('active');  // إظهار الصورة الجديدة
+}
+
+// بدء تبديل الصور تلقائيًا
+function startImageSlider(key, totalImages) {
+    let currentIndex = 0;
+    setInterval(() => {
+        const images = document.querySelectorAll(`#product-images-${key} .product-image`);
+        images[currentIndex].classList.remove('active');  // إخفاء الصورة الحالية
+        currentIndex = (currentIndex + 1) % totalImages;  // الانتقال إلى الصورة التالية
+        images[currentIndex].classList.add('active');  // إظهار الصورة الجديدة
+    }, 3000);  // تغيير الصورة كل 3 ثوانٍ
+}
+
 
 
 // دالة لإعادة التوجيه إلى صفحة المنتج
@@ -3652,11 +3746,32 @@ setInterval(showNextImage, 3000); // تغيير الصورة كل 3 ثواني
 </body>
 </html>
 
-<script type="text/babel">
+  <script type="text/babel">
   const { useState, useEffect } = React;
 
-  const AdBanner = ({ adContent, targetUrl, title, description, onClose }) => {
-    const isVideo = adContent.endsWith('.mp4') || adContent.endsWith('.webm');
+  const AdBanner = ({ adImages, targetUrl, title, description, onClose }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isImageVisible, setIsImageVisible] = useState(true);
+
+    // تغيير الصورة كل 3 ثوانٍ
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setIsImageVisible(false);
+        setTimeout(() => {
+          setCurrentImageIndex((prevIndex) => (prevIndex + 1) % adImages.length);
+          setIsImageVisible(true);
+        }, 500); // وقت الانتقال
+      }, 3000); // التبديل بين الصور كل 3 ثوانٍ
+      return () => clearInterval(interval);
+    }, [adImages]);
+
+    // دالة لنقل البيانات إلى WhatsApp
+    const handleImageClick = () => {
+      const phoneNumber = "9647813798636";
+      const message = `استعلام عن المنتج:\n\n${title}\n${description}\nصور:\n${adImages.join('\n')}`;
+      const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappLink, '_blank');
+    };
 
     return (
       <div style={{
@@ -3690,23 +3805,21 @@ setInterval(showNextImage, 3000); // تغيير الصورة كل 3 ثواني
         </button>
 
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          {/* محتوى الإعلان (صورة أو فيديو) */}
+          {/* محتوى الإعلان (شريط الصور المتحركة) */}
           <a href={targetUrl} style={{ textDecoration: "none", display: "block", width: "100%", height: "100%" }}>
-            {isVideo ? (
-              <video 
-                src={adContent} 
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                controls 
-                autoPlay 
-                loop 
-              />
-            ) : (
-              <img 
-                src={adContent} 
-                alt="إعلان" 
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-              />
-            )}
+            <img 
+              src={adImages[currentImageIndex]} 
+              alt="إعلان" 
+              onClick={handleImageClick} // إضافة حدث النقر
+              style={{
+                width: "100%", 
+                height: "100%", 
+                objectFit: "cover", 
+                transition: "opacity 1s ease-in-out, transform 1s ease-in-out",
+                opacity: isImageVisible ? 1 : 0,
+                transform: isImageVisible ? "scale(1)" : "scale(1.05)"
+              }} 
+            />
           </a>
 
           {/* النصوص وزر "Next" في الأسفل */}
@@ -3779,17 +3892,17 @@ setInterval(showNextImage, 3000); // تغيير الصورة كل 3 ثواني
     };
 
     if (ads.length === 0 || !isVisible) {
-      return <div style={{ textAlign: "center", marginTop: "20%" }}>Loading Ads...</div>;
+      return <div style={{ textAlign: "center", marginTop: "20%" }}></div>;
     }
 
     const currentAd = ads[currentAdIndex];
 
     return (
       <AdBanner
-        adContent={currentAd.adImage}  // يمكن أن يكون فيديو أو صورة
+        adImages={currentAd.adImages}  // جلب مجموعة الصور من قاعدة البيانات
         targetUrl={currentAd.targetUrl}
-        title={currentAd.title}  // جلب العنوان من قاعدة البيانات
-        description={currentAd.description}  // جلب الوصف من قاعدة البيانات
+        title={currentAd.title}
+        description={currentAd.description}
         onClose={handleClose}
       />
     );
@@ -3797,3 +3910,5 @@ setInterval(showNextImage, 3000); // تغيير الصورة كل 3 ثواني
 
   ReactDOM.render(<App />, document.getElementById("ad-banner"));
 </script>
+
+
